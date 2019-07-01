@@ -25,9 +25,17 @@ struct RedundantInt write_int(int value) {
     return res;
 }
 
-// TODO
+bool approxEqual(double a, double b) {
+    static const double epsilon = 1e-6; 
+    return fabs(a - b) < epsilon;
+}
+
 double sqrt_newton_raphson(int value) {
-    return value;
+    double curr = value;
+    while (!approxEqual(curr * curr, value)) {
+        curr = (curr + value / curr) / 2.0;
+    }
+    return curr;
 }
 
 double sqrt_binary_search(int value) {
@@ -62,11 +70,6 @@ double sqrt_binary_search(int value) {
         inc /= 10; 
     } 
     return res;
-}
-
-bool approxEqual(double a, double b) {
-    static const double epsilon = 1e-6; 
-    return fabs(a - b) < epsilon;
 }
 
 // Returns a success code: 0 = success, -1 = computations don't agree 
@@ -109,8 +112,7 @@ int sqrt_heterogenous_computations(int value, int *output) {
     return -1;
 }
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     struct RedundantInt red = write_int(5);
     printf("red.value = %d\n", red.value);
     int output = 0;
@@ -118,6 +120,6 @@ int main(int argc, char const *argv[])
 
     printf("code = %d, output = %d\n", code, output);
 
-    printf("%f\n", sqrt_binary_search(69));
+    printf("%f\n", sqrt_newton_raphson(69));
     return 0;
 }
