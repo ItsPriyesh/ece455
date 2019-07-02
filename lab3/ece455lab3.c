@@ -73,7 +73,7 @@ double sqrt_binary_search(int value) {
 }
 
 // Returns a success code: 0 = success, -1 = computations don't agree 
-int sqrt_voting_system(int value, int *output) {
+int sqrt_voting_system(int value, double *output) {
     static const int iters = 3;
     double results[iters];
     for (int i = 0; i < iters; i++) {
@@ -94,7 +94,8 @@ int sqrt_voting_system(int value, int *output) {
     return -1;
 }
 
-int sqrt_heterogenous_computations(int value, int *output) {
+// Returns a success code: 0 = success, -1 = computations don't agree 
+int sqrt_heterogenous_computations(int value, double *output) {
     double res1 = sqrt(value);
     double res2 = sqrt_newton_raphson(value);
     double res3 = sqrt_binary_search(value);
@@ -109,6 +110,16 @@ int sqrt_heterogenous_computations(int value, int *output) {
     }
 
     // No agreement
+    return -1;
+}
+
+// Returns a success code: 0 = verification success, -1 = verification failed
+int sqrt_result_verification(double (*sqrt)(int), int value, double *output) {
+    double res = (*sqrt)(value);
+    if (approxEqual(res * res, value)) {
+        *output = res;
+        return 0;
+    }
     return -1;
 }
 
