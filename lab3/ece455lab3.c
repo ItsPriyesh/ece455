@@ -53,7 +53,7 @@ int read_double(struct RedundantDouble *redundant_double, double *output) {
 
 /********** SQRT IMPLEMENTATIONS **********/
 
-double sqrt_newton_raphson(int value) {
+double sqrt_newton_raphson(double value) {
     double curr = value;
     while (!approxEqual(curr * curr, value)) {
         curr = (curr + value / curr) / 2.0;
@@ -61,9 +61,9 @@ double sqrt_newton_raphson(int value) {
     return curr;
 }
 
-double sqrt_binary_search(int value) {
+double sqrt_binary_search(double value) {
     int start = 0;
-    int end = value; 
+    int end = (int) floor(value); 
     int mid; 
     double res;
   
@@ -99,7 +99,7 @@ double sqrt_binary_search(int value) {
 /********** VOTING SYSTEM **********/
 
 // Returns a success code: 0 = success, -1 = computations don't agree 
-int sqrt_voting_system(int value, double *output) {
+int sqrt_voting_system(double value, double *output) {
     static const int iters = 3;
     double results[iters];
     for (int i = 0; i < iters; i++) {
@@ -144,7 +144,7 @@ int sqrt_heterogenous_computations(int value, double *output) {
 /********** RESULT VERIFICATION **********/
 
 // Returns a success code: 0 = verification success, -1 = verification failed
-int sqrt_result_verification(double (*sqrt)(int), int value, double *output) {
+int sqrt_result_verification(double (*sqrt)(double), double value, double *output) {
     double res = (*sqrt)(value);
     if (approxEqual(res * res, value)) {
         *output = res;
@@ -166,5 +166,14 @@ int main(int argc, char const *argv[]) {
     code = read_double(&redundant_double, &output_d);
     printf("code = %d, output = %f\n", code, output_d);
 
+    double output;
+    code = sqrt_voting_system(16, &output);
+    printf("code = %d, output = %f\n", code, output);
+
+    code = sqrt_heterogenous_computations(16, &output);
+    printf("code = %d, output = %f\n", code, output);
+
+    code = sqrt_result_verification(sqrt_newton_raphson, 16, &output);
+    printf("code = %d, output = %f\n", code, output);
     return 0;
 }
