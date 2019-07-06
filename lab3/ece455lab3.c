@@ -2,10 +2,24 @@
 #include <stdbool.h>
 #include <math.h>
 
+// Floating point equality: a == b iff |a-b| < epsilon
+bool approxEqual(double a, double b) {
+    static const double epsilon = 1e-6; 
+    return fabs(a - b) < epsilon;
+}
+
+/********** DATA REDUNDANCY **********/
+
 struct RedundantInt {
     int value;
     int inverted;
 };
+
+// Returns a new RedundantInt as a value
+void write_int(struct RedundantInt *redundant_int, int value) {
+    redundant_int->value = value;
+    redundant_int->inverted = ~value;
+}
 
 // Returns a success code: 0 = success, -1 = fault detected 
 int read_int(struct RedundantInt *redundant_int, int *output) {
@@ -17,18 +31,27 @@ int read_int(struct RedundantInt *redundant_int, int *output) {
     }
 }
 
-// Returns a new RedundantInt as a value
-struct RedundantInt write_int(int value) {
-    struct RedundantInt res;
-    res.value = value;
-    res.inverted = ~value;
-    return res;
+struct RedundantDouble {
+    double value;
+    long inverted;
+};
+
+void write_double(struct RedundantDouble *redundant_double, double value) {
+    redundant_double->value = value;
+    redundant_double->inverted = ~((long) trunc(1e6 * value));
 }
 
-bool approxEqual(double a, double b) {
-    static const double epsilon = 1e-6; 
-    return fabs(a - b) < epsilon;
+// Returns a success code: 0 = success, -1 = fault detected 
+int read_double(struct RedundantDouble *redundant_double, double *output) {
+    if (redundant_double->value == (~redundant_double->inverted / 1e6)) {
+        *output = redundant_double->value;
+        return 0;
+    } else {
+        return -1;
+    }
 }
+
+/********** SQRT IMPLEMENTATIONS **********/
 
 double sqrt_newton_raphson(int value) {
     double curr = value;
@@ -72,6 +95,9 @@ double sqrt_binary_search(int value) {
     return res;
 }
 
+
+/********** VOTING SYSTEM **********/
+
 // Returns a success code: 0 = success, -1 = computations don't agree 
 int sqrt_voting_system(int value, double *output) {
     static const int iters = 3;
@@ -94,6 +120,8 @@ int sqrt_voting_system(int value, double *output) {
     return -1;
 }
 
+/********** HETEROGENEOUS COMPUTATIONS **********/
+
 // Returns a success code: 0 = success, -1 = computations don't agree 
 int sqrt_heterogenous_computations(int value, double *output) {
     double res1 = sqrt(value);
@@ -113,6 +141,8 @@ int sqrt_heterogenous_computations(int value, double *output) {
     return -1;
 }
 
+/********** RESULT VERIFICATION **********/
+
 // Returns a success code: 0 = verification success, -1 = verification failed
 int sqrt_result_verification(double (*sqrt)(int), int value, double *output) {
     double res = (*sqrt)(value);
@@ -124,13 +154,17 @@ int sqrt_result_verification(double (*sqrt)(int), int value, double *output) {
 }
 
 int main(int argc, char const *argv[]) {
-    struct RedundantInt red = write_int(5);
-    printf("red.value = %d\n", red.value);
-    int output = 0;
-    int code = read_int(&red, &output);
+    struct RedundantInt redundant_int;
+    write_int(&redundant_int, 5);
+    int output_i = 0;
+    int code = read_int(&redundant_int, &output_i);
+    printf("code = %d, output = %d\n", code, output_i);
 
-    printf("code = %d, output = %d\n", code, output);
+    struct RedundantDouble redundant_double;
+    write_double(&redundant_double, 3.14159);
+    double output_d = 0;
+    code = read_double(&redundant_double, &output_d);
+    printf("code = %d, output = %f\n", code, output_d);
 
-    printf("%f\n", sqrt_newton_raphson(69));
     return 0;
 }
